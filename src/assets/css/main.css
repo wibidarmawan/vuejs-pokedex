@@ -1,0 +1,83 @@
+@import url("https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Lobster&display=swap");
+
+body {
+  font-family: "Quicksand";
+}
+
+.navbar-brand {
+  font-family: "Lobster";
+  font-weight: bold;
+  font-size: 2vw;
+}
+
+/* .pokemon-list{
+  height: 566;
+  overflow-y: auto;
+} */
+
+.content{
+  height: 560px;
+}
+
+.card-image {
+  height: 65%;
+}
+
+.card-name {
+  height: 35%;
+}
+
+.pokemon-card {
+  height: 130px;
+  /* width: 120px; */
+  border-radius: 5px;
+  font-size: 1.8vh;
+  overflow: hidden;
+}
+
+.pokemon-card:hover {
+  background-color: #dfe6e9;
+}
+
+.search-icon {
+  position: absolute;
+}
+
+.pokemon-name {
+  text-transform: capitalize;
+}
+
+.property {
+  border-bottom: 1px solid black;
+  margin-bottom: 10px;
+  overflow: auto;
+}
+
+.type {
+  border-radius: 8px;
+}
+
+.types {
+  border-bottom: 1px solid black;
+}
+
+.left {
+  float: left;
+}
+
+.right {
+  float: right;
+}
+
+@media screen and (max-width: 800px) {
+  .pokemon-card {
+    width: 120px;
+    font-size: 2.5vh;
+  }
+
+  .content{
+    height: 100%;
+    flex-direction: column-reverse;
+  }
+}
