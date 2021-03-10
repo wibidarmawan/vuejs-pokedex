@@ -13,12 +13,12 @@
     </div>
     <div class="row content">
       <div
-        class="col-md-8 d-flex flex-wrap text-center justify-content-center "
+        class="col-md-8 d-flex flex-wrap text-center justify-content-center"
         width="100%"
       >
-        <div class="row d-flex justify-content-center h-100 w-100 border align-items-start">
+        <div class="row d-flex justify-content-around h-100 w-100 border">
           <div
-            class="col-md-1 pokemon-card pokemon-name p-0 m-1 shadow btn flex-wrap border border-dark"
+            class="col-md-1 pokemon-card pokemon-name p-0 m-1 shadow btn flex-wrap border border-dark align-items-start"
             @click="showDetails(pokemon.url)"
             v-for="pokemon in resultQuery"
             :key="pokemon.name"
@@ -33,33 +33,33 @@
     </div>
     <div class="row justify-content-center mt-2">
       <div class="row justify-content-center align-items-center">
-          <div class="col-md-3 m-0">
-            <span
-              class="btn input-group-text justify-content-center"
-              v-bind:class="{ disabled: previous }"
-              @click="previousPage(previousUrl)"
-              ><b-icon-arrow-left></b-icon-arrow-left>
-            </span>
-          </div>
-          <div class="col-md-3 m-0">
-            <b-form-input
-              v-model="pageNumber"
-              type="text"
-              class="form-control text-center"
-              :value="pageNumber"
-              @keyup.enter="gotoPage"
-              @focus="$event.target.select()"
-            />
-          </div>
-          <div class="col-md-3 m-0">
-            <span
-              class="btn input-group-text justify-content-center"
-              v-bind:class="{ disabled: next }"
-              @click="nextPage(nextUrl)"
-              ><b-icon-arrow-right></b-icon-arrow-right
-            ></span>
-          </div>
+        <div class="col-md-3 m-0">
+          <span
+            class="btn input-group-text justify-content-center"
+            v-bind:class="{ disabled: previous }"
+            @click="previousPage(previousUrl)"
+            ><b-icon-arrow-left></b-icon-arrow-left>
+          </span>
         </div>
+        <div class="col-md-3 m-0">
+          <b-form-input
+            v-model="pageNumber"
+            type="text"
+            class="form-control text-center"
+            :value="pageNumber"
+            @keyup.enter="gotoPage"
+            @focus="$event.target.select()"
+          />
+        </div>
+        <div class="col-md-3 m-0">
+          <span
+            class="btn input-group-text justify-content-center"
+            v-bind:class="{ disabled: next }"
+            @click="nextPage(nextUrl)"
+            ><b-icon-arrow-right></b-icon-arrow-right
+          ></span>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -83,7 +83,8 @@ export default {
     return {
       pokemons: [],
       allPokemons: [],
-      allP:[],
+      totalPage: 0,
+      allP: [],
       search: "",
       filteredPokemon: [],
       selected: "",
@@ -94,25 +95,26 @@ export default {
       nextUrl: "",
       pageNumber: 0,
       offset: 0,
-      cek: 0
+      cek: 0,
     };
   },
 
-  computed:{
-    resultQuery(){
-      if(this.search){
-        return this.pokemons.filter((item)=>{
-          return item.name.toLowerCase().includes(this.search.toLowerCase())
-        })
-      } else{
-        return this.pokemons
+  computed: {
+    resultQuery() {
+      if (this.search) {
+        return this.pokemons.filter((item) => {
+          return item.name.toLowerCase().includes(this.search.toLowerCase());
+        });
+      } else {
+        return this.pokemons;
       }
-    }
+    },
   },
 
   methods: {
     fetchData(data) {
       this.pokemons = data.results;
+      this.totalPage = Math.ceil(data.count / 40);
       this.checkPage(data);
       // this.allP.forEach(element => {
       //   this.allPokemons.push(element);
@@ -158,54 +160,43 @@ export default {
     previousPage(url) {
       if (!this.previous) {
         url = url.split("&")[0] + "&limit=40";
-        axios
-          .get(url)
-          .then((response) => this.fetchData(response.data))
-          .catch((error) => console.log(error));
+        this.fetching(url);
       }
     },
     nextPage(url) {
       if (!this.next) {
         url = url.split("&")[0] + "&limit=40";
-        axios
-          .get(url)
-          .then((response) => this.fetchData(response.data))
-          .catch((error) => console.log(error));
+        this.fetching(url);
       }
     },
     gotoPage() {
       this.pageNumber = parseInt(this.pageNumber);
-      if (this.pageNumber <= 28 && this.pageNumber >= 1) {
-        axios
-          .get(
-            "https://pokeapi.co/api/v2/pokemon/?offset=" +
-              (this.pageNumber - 1) * 40 +
-              "&limit=40"
-          )
-          .then((response) => this.fetchData(response.data))
-          .catch((error) => console.log(error));
-      } else if (this.pageNumber > 28) {
-        this.pageNumber = 28;
-        axios
-          .get("https://pokeapi.co/api/v2/pokemon/?offset=1080&limit=40")
-          .then((response) => this.fetchData(response.data))
-          .catch((error) => console.log(error));
+      if (this.pageNumber <= this.totalPage && this.pageNumber >= 1) {
+        this.fetching(
+          "https://pokeapi.co/api/v2/pokemon/?offset=" +
+            (this.pageNumber - 1) * 40 +
+            "&limit=40"
+        );
+      } else if (this.pageNumber > this.totalPage) {
+        this.pageNumber = this.totalPage;
+        this.fetching(
+          "https://pokeapi.co/api/v2/pokemon/?offset=1080&limit=40"
+        );
       } else {
         this.pageNumber = 1;
-        axios
-          .get("https://pokeapi.co/api/v2/pokemon/?offset=0&limit=40")
-          .then((response) => this.fetchData(response.data))
-          .catch((error) => console.log(error));
+        this.fetching();
       }
+    },
+    fetching(url = "https://pokeapi.co/api/v2/pokemon/?offset=0&limit=40") {
+      axios
+        .get(url)
+        .then((response) => this.fetchData(response.data))
+        .catch((error) => console.log(error));
     },
   },
 
   mounted() {
-    // this.fetchAllPokemon();
-    axios
-      .get("https://pokeapi.co/api/v2/pokemon/?offset=0&limit=40")
-      .then((response) => this.fetchData(response.data))
-      .catch((error) => console.log(error));
+    this.fetching();
   },
 };
 </script>
